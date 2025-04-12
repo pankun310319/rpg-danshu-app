@@ -79,7 +79,64 @@ input, textarea {
 # 【UI表示】
 # ======================
 st.title("🎮 断酒クエスト")
+# レベル計算
+continuation_days = int((df_all["日常の選択"] != "").astype(int).sum())
+level = get_level(continuation_days)
+progress = get_level_progress(continuation_days)
 
+st.markdown("## 🧙‍♂️ ステータス画面")
+st.markdown(f"🗡 レベル: {level}（続けて {continuation_days} 日）")
+st.progress(progress)
+
+# ステータス表示テーブル
+st.markdown("""
+<style>
+.stat-table {
+    border: 3px double #888888;
+    background-color: #111111;
+    color: white;
+    padding: 10px;
+    font-size: 18px;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    width: fit-content;
+}
+.stat-table .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+}
+.stat-table .row span:first-child {
+    margin-right: 20px;
+}
+.stat-table .row span:last-child {
+    text-align: right;
+    min-width: 50px;
+    display: inline-block;
+}
+</style>
+<div class="stat-table">
+  <div class="row"><span>💰 ゴールド</span><span>{gold} G</span></div>
+  <div class="row"><span>❤️ さいだいHP</span><span> {health}</span></div>
+  <div class="row"><span>🧘‍♂️ さいだいMP</span><span> {mental}</span></div>
+  <div class="row"><span>💪 こうげき力</span><span> {strength}</span></div>
+  <div class="row"><span>😎 かっこよさ</span><span> {cool}</span></div>
+</div>
+""".format(
+    gold=st.session_state.gold,
+    health=st.session_state.health,
+    mental=st.session_state.mental,
+    strength=st.session_state.strength,
+    cool=st.session_state.cool
+), unsafe_allow_html=True)
+
+# 記録表示切り替えボタン
+if st.button("📂 記録をひらく"):
+    st.markdown("## 📖 記録一覧")
+    df_all_display = df_all.copy()
+    df_all_display = df_all_display[[
+        "日付", "日常の選択", "日別約", "日別金", "健康", "精神", "筋力", "かっこよさ"
+    ]]
+    st.dataframe(df_all_display)
 st.header("😡 理不尽モンスター操作")
 col1, col2, col3 = st.columns(3)
 if 'irihuda_level' not in st.session_state:
