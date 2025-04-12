@@ -68,17 +68,20 @@ body, .stApp {
     color: white;
 }
 input, textarea {
-    background-color: #111;
-    color: white;
-    border: 1px solid #888;
+    background-color: #111 !important;
+    color: white !important;
+    border: 1px solid #888 !important;
     border-radius: 6px;
     padding: 5px;
 }
-.stNumberInput > div > div {
+.stNumberInput input {
     background-color: #111 !important;
     color: white !important;
-    border-radius: 6px;
-    border: 1px solid #888;
+}
+.stNumberInput button {
+    background-color: #222 !important;
+    color: white !important;
+    border: 1px solid #888 !important;
 }
 .stButton > button {
     background-color: #222;
