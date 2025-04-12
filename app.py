@@ -44,19 +44,19 @@ st.markdown("## 🧙‍♂️ ステータス画面")
 
 st.markdown("""
 <style>
-.stat-table {
+.stat-table {{
     border: 3px double #888888;
     background-color: #f9f9f0;
     padding: 10px;
     font-size: 18px;
     font-family: 'M PLUS Rounded 1c', sans-serif;
     width: fit-content;
-}
-.stat-table .row {
+}}
+.stat-table .row {{
     display: flex;
     justify-content: space-between;
     padding: 3px 0;
-}
+}}
 </style>
 <div class="stat-table">
   <div class="row"><span>💰 ゴールド</span><span>{gold} G</span></div>
