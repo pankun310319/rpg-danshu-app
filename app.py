@@ -53,29 +53,51 @@ def get_level_progress(days):
 # ======================
 st.markdown("""
 <style>
+/* 背景・文字 */
 body, .stApp {
     background-color: #000000;
     color: white;
 }
-button, .stButton > button {
-    background-color: #222;         /* 濃いグレー背景 */
-    color: #ffffff !important;      /* はっきりした白文字 */
-    font-weight: bold;
-    font-size: 16px;
-    border: 2px solid #aaa;
+
+/* 入力コンポーネントの背景や文字 */
+div[data-testid="stHorizontalBlock"] > div {
+    background-color: #111111;
+    color: white;
     border-radius: 8px;
-    padding: 8px 16px;
-    margin: 4px 0;
+    padding: 8px;
 }
+
+/* テキスト入力・数値入力など */
 input[type="number"], input[type="text"], textarea {
     background-color: #111111;
     color: white;
     border: 1px solid #888;
     padding: 0.5em;
     border-radius: 6px;
-label, .stTextInput > label, .stNumberInput > label {
+}
+
+/* ラベル（「今日の食費は？」など） */
+label, .stTextInput > label, .stNumberInput > label, .css-1cpxqw2 {
     color: white !important;
 }
+
+/* 数値入力の「+」「−」ボタン */
+div[data-testid="stNumberInput"] button {
+    background-color: #222222;
+    color: white;
+    border: 1px solid #888;
+}
+
+/* 通常ボタン（断酒・モンスター撃破・運動など） */
+.stButton > button {
+    color: white !important;
+    background-color: #333333;
+    border: 1px solid #888;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+/* ステータステーブルの装飾 */
 .stat-table {
     border: 3px double #888888;
     background-color: #111111;
@@ -100,7 +122,6 @@ label, .stTextInput > label, .stNumberInput > label {
 }
 </style>
 """, unsafe_allow_html=True)
-
 # ======================
 # 【UI表示】
 # ======================
