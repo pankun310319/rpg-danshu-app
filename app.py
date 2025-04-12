@@ -15,16 +15,32 @@ if 'cool' not in st.session_state:
 
 st.markdown("""
 <style>
-/* 画面全体を黒背景にして文字を白にする */
-body {
+/* 全体の背景と文字色を黒＆白に */
+body, .stApp {
     background-color: #000000;
     color: white;
 }
 
-/* Streamlitの中身を含めた全体に適用 */
-html, .css-1d391kg, .css-ffhzg2 {
-    background-color: #000000;
+/* 入力フォームやボタンなども背景を黒っぽく */
+div[data-testid="stHorizontalBlock"] > div {
+    background-color: #111111;
     color: white;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+/* テキストボックスなどの入力欄の背景 */
+input, textarea {
+    background-color: #222222;
+    color: white;
+    border: 1px solid #555;
+}
+
+/* 数値入力の＋−ボタンも黒く */
+button {
+    background-color: #333333;
+    color: white;
+    border: 1px solid #888;
 }
 </style>
 """, unsafe_allow_html=True)
