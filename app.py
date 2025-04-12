@@ -42,6 +42,22 @@ button {
     color: white;
     border: 1px solid #888;
 }
+
+/* ラベルの文字（フォーム名など）も白に */
+label, .stTextInput > label, .stNumberInput > label {
+    color: white !important;
+}
+
+/* 入力欄のラベルテキスト（特にStreamlitのバージョンが新しい場合） */
+.css-1cpxqw2 {
+    color: white !important;
+}
+
+/* ボタンの文字も白に強制 */
+button {
+    color: white !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -89,6 +105,16 @@ st.markdown("""
     display: flex;
     justify-content: space-between;
     padding: 3px 0;
+}}
+
+.stat-table .row span:first-child {{
+    margin-right: 20px;
+}}
+
+.stat-table .row span:last-child {{
+    text-align: right;
+    min-width: 50px;
+    display: inline-block;
 }}
 </style>
 <div class="stat-table">
