@@ -42,8 +42,17 @@ if exercise:
 
 # 🧠 ステータス表示
 st.markdown("### 🧠 現在のステータス")
-st.write(f"💰 ゴールド：{st.session_state.gold} G")
-st.write(f"❤️ 健康：{st.session_state.health}")
-st.write(f"🧘 精神力：{st.session_state.mental}")
-st.write(f"💪 筋力：{st.session_state.strength}")
-st.write(f"😎 かっこよさ：{st.session_state.cool}")
+
+import pandas as pd
+stats = {
+    "ステータス": ["💰 ゴールド", "❤️ 健康", "🧘 精神力", "💪 筋力", "😎 かっこよさ"],
+    "数値": [
+        st.session_state.gold,
+        st.session_state.health,
+        st.session_state.mental,
+        st.session_state.strength,
+        st.session_state.cool,
+    ]
+}
+df = pd.DataFrame(stats)
+st.table(df)
