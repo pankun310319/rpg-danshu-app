@@ -160,7 +160,31 @@ st.markdown("""
     cool=st.session_state.cool
 ), unsafe_allow_html=True)
 
+# ✅ セーブ処理（1日1回だけ記録追加）
+if st.button("📥 今日の記録をセーブする"):
+    df = pd.read_csv("record.csv")
+    from datetime import date
+    today = str(date.today())
+
+    if today not in df["日付"].values:
+        new_row = {
+            "日付": today,
+            "断酒": "○" if did_abstain else "",
+            "運動": "○" if did_exercise else "",
+            "節約額": saved_money,
+            "ゴールド": st.session_state.gold,
+            "健康": st.session_state.health,
+            "精神力": st.session_state.mental,
+            "筋力": st.session_state.strength,
+            "かっこよさ": st.session_state.cool
+        }
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        df.to_csv("record.csv", index=False)
+        st.success("セーブ完了！📗")
+    else:
+        st.warning("今日の記録はすでに保存されています！")
+
 # 📖 記録表示
 st.markdown("## 📖 記録一覧")
-df = pd.read_csv(csv_path)
+df = pd.read_csv("record.csv")
 st.dataframe(df)
