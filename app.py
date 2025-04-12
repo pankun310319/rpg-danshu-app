@@ -1,7 +1,7 @@
 
 import streamlit as st
 
-# ステータスの初期化（←これが大事！）
+# ステータスの初期化（←ここがないと format() でエラーになる！）
 if 'gold' not in st.session_state:
     st.session_state.gold = 0
 if 'health' not in st.session_state:
