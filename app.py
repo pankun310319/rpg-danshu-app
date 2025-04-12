@@ -46,7 +46,8 @@ st.markdown("""
 <style>
 .stat-table {{
     border: 3px double #888888;
-    background-color: #f9f9f0;
+    background-color: #111111;  /* 黒背景 */
+    color: white;               /* 白文字 */
     padding: 10px;
     font-size: 18px;
     font-family: 'M PLUS Rounded 1c', sans-serif;
@@ -60,10 +61,10 @@ st.markdown("""
 </style>
 <div class="stat-table">
   <div class="row"><span>💰 ゴールド</span><span>{gold} G</span></div>
-  <div class="row"><span>❤️ さいだいHP</span><span>{health}</span></div>
-  <div class="row"><span>🧘‍♂️ さいだいMP</span><span>{mental}</span></div>
-  <div class="row"><span>💪 こうげき力</span><span>{strength}</span></div>
-  <div class="row"><span>😎 みりょく</span><span>{cool}</span></div>
+  <div class="row"><span>❤️ さいだいHP</span><span> {health}</span></div>
+  <div class="row"><span>🧘‍♂️ さいだいMP</span><span> {mental}</span></div>
+  <div class="row"><span>💪 こうげき力</span><span> {strength}</span></div>
+  <div class="row"><span>😎 みりょく</span><span> {cool}</span></div>
 </div>
 """.format(
     gold=st.session_state.gold,
