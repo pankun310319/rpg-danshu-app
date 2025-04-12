@@ -67,10 +67,12 @@ button, .stButton > button {
     padding: 8px 16px;
     margin: 4px 0;
 }
-input, textarea {
-    background-color: #222222;
+input[type="number"], input[type="text"], textarea {
+    background-color: #111111;
     color: white;
-}
+    border: 1px solid #888;
+    padding: 0.5em;
+    border-radius: 6px;
 label, .stTextInput > label, .stNumberInput > label {
     color: white !important;
 }
