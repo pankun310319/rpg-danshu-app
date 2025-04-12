@@ -16,16 +16,44 @@ if 'strength' not in st.session_state:
     st.session_state.strength = 0
 if 'cool' not in st.session_state:
     st.session_state.cool = 0
+if 'irihuda_level' not in st.session_state:
+    st.session_state.irihuda_level = ""
 
 today = str(date.today())
 csv_path = "record.csv"
 
 if not os.path.exists(csv_path):
     df_init = pd.DataFrame(columns=[
-        "日付", "日別選択", "節約額", "運動", "理不尽レベル",
-        "ゴールド", "健康", "精神力", "筋力", "かっこよさ", "日別効果"
+        "日付", "日別効果", "理不尽レベル", "ゴールド", "健康", "精神力", "筋力", "かっこよさ"
     ])
     df_init.to_csv(csv_path, index=False)
+
+df_all = pd.read_csv(csv_path)
+if "日別効果" in df_all.columns:
+    continuation_days = int((df_all["日別効果"] != "").astype(int).sum())
+else:
+    continuation_days = 0
+
+def get_level(days):
+    if days < 100:
+        return int(days / 2)
+    elif days < 300:
+        return int(50 + (days - 100) * 0.25)
+    else:
+        return min(99, int(100 + (days - 300) * 0.1))
+
+def get_level_progress(days):
+    level = get_level(days)
+    if level < 50:
+        base = level * 2
+    elif level < 100:
+        base = 100 + (level - 50) * 4
+    else:
+        base = 200 + (level - 100) * 10
+    return min(100, int((days / (base + 1)) * 100))
+
+level = get_level(continuation_days)
+progress = get_level_progress(continuation_days)
 
 # ======================
 # 【CSSデザイン】
@@ -79,42 +107,13 @@ input, textarea {
 # 【UI表示】
 # ======================
 st.title("🎮 断酒クエスト")
-# レベル計算（CSV読み込み → 継続日数 → レベル＆進行度）
-df_all = pd.read_csv(csv_path)
-continuation_days = int((df_all["日別効果"] != "").astype(int).sum())
-level = get_level(continuation_days)
-progress = get_level_progress(continuation_days)
 
+# --- レベル・ステータス表示 ---
 st.markdown("## 🧙‍♂️ ステータス画面")
 st.markdown(f"🗡 レベル: {level}（続けて {continuation_days} 日）")
 st.progress(progress)
 
-# ステータス表示テーブル
 st.markdown("""
-<style>
-.stat-table {
-    border: 3px double #888888;
-    background-color: #111111;
-    color: white;
-    padding: 10px;
-    font-size: 18px;
-    font-family: 'M PLUS Rounded 1c', sans-serif;
-    width: fit-content;
-}
-.stat-table .row {
-    display: flex;
-    justify-content: space-between;
-    padding: 3px 0;
-}
-.stat-table .row span:first-child {
-    margin-right: 20px;
-}
-.stat-table .row span:last-child {
-    text-align: right;
-    min-width: 50px;
-    display: inline-block;
-}
-</style>
 <div class="stat-table">
   <div class="row"><span>💰 ゴールド</span><span>{gold} G</span></div>
   <div class="row"><span>❤️ さいだいHP</span><span> {health}</span></div>
@@ -130,18 +129,9 @@ st.markdown("""
     cool=st.session_state.cool
 ), unsafe_allow_html=True)
 
-# 記録表示切り替えボタン
-if st.button("📂 記録をひらく"):
-    st.markdown("## 📖 記録一覧")
-    df_all_display = df_all.copy()
-    df_all_display = df_all_display[[
-        "日付", "日常の選択", "日別約", "日別金", "健康", "精神", "筋力", "かっこよさ"
-    ]]
-    st.dataframe(df_all_display)
+# --- 理不尽モンスター操作 ---
 st.header("😡 理不尽モンスター操作")
 col1, col2, col3 = st.columns(3)
-if 'irihuda_level' not in st.session_state:
-    st.session_state.irihuda_level = ""
 
 with col1:
     if st.button("🙄 弱 (Lv1)"):
@@ -164,9 +154,7 @@ with col3:
         st.session_state.irihuda_level = "Lv3"
         st.success("不条理の絞め技を勝利でかわした！+1000G 精神+3")
 
-# ======================
-# 【セーブ処理】
-# ======================
+# --- セーブ処理 ---
 if st.button("📅 今日の結果をセーブ"):
     df = pd.read_csv(csv_path)
     if today not in df["日付"].values:
@@ -186,29 +174,7 @@ if st.button("📅 今日の結果をセーブ"):
     else:
         st.warning("今日は既にセーブされています")
 
-# ======================
-# 【ステータス表示】
-# ======================
-st.markdown("## 📊 ステータス")
-st.markdown("""
-<div class="stat-table">
-  <div class="row"><span>💰 ゴールド</span><span>{} G</span></div>
-  <div class="row"><span>❤️ さいだいHP</span><span>{}</span></div>
-  <div class="row"><span>🧘‍♂️ さいだいMP</span><span>{}</span></div>
-  <div class="row"><span>💪 こうげき力</span><span>{}</span></div>
-  <div class="row"><span>😎 かっこよさ</span><span>{}</span></div>
-</div>
-""".format(
-    st.session_state.gold,
-    st.session_state.health,
-    st.session_state.mental,
-    st.session_state.strength,
-    st.session_state.cool
-), unsafe_allow_html=True)
-
-# ======================
-# 【記録表示】
-# ======================
-st.markdown("## 📃 記録一覧")
-df_show = pd.read_csv(csv_path)
-st.dataframe(df_show, use_container_width=True)
+# --- 記録表示 ---
+if st.button("📂 記録をひらく"):
+    st.markdown("## 📖 記録一覧")
+    st.dataframe(df_all, use_container_width=True)
