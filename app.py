@@ -57,10 +57,15 @@ body, .stApp {
     background-color: #000000;
     color: white;
 }
-button {
-    background-color: #333333;
-    color: white !important;
-    border: 1px solid #888;
+button, .stButton > button {
+    background-color: #222;         /* 濃いグレー背景 */
+    color: #ffffff !important;      /* はっきりした白文字 */
+    font-weight: bold;
+    font-size: 16px;
+    border: 2px solid #aaa;
+    border-radius: 8px;
+    padding: 8px 16px;
+    margin: 4px 0;
 }
 input, textarea {
     background-color: #222222;
