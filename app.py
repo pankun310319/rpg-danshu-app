@@ -1,7 +1,7 @@
 
 import streamlit as st
 
-# セッションステートでステータス保持
+# ステータスの初期化（←これが大事！）
 if 'gold' not in st.session_state:
     st.session_state.gold = 0
 if 'health' not in st.session_state:
@@ -34,14 +34,14 @@ if st.button("💰 節約金額を計算"):
         st.info("今日は節約できなかったみたい…")
 
 # 🏋️ 今日運動した？
-exercise = st.checkbox("🏋️ 今日運動しましたか？")
-if exercise:
+if st.button("🏋️ 今日運動しました！"):
     st.session_state.strength += 1
     st.session_state.cool += 1
-    st.success("筋力+1、かっこよさ+1")
+    st.success("トレーニング完了！ 筋力+1、かっこよさ+1")
 
 # 🧠 ステータス表示
 st.markdown("## 🧙‍♂️ ステータス画面")
+
 st.markdown("""
 <style>
 .stat-table {
@@ -49,7 +49,7 @@ st.markdown("""
     background-color: #f9f9f0;
     padding: 10px;
     font-size: 18px;
-    font-family: 'Courier New', monospace;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
     width: fit-content;
 }
 .stat-table .row {
