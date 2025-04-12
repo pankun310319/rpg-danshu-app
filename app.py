@@ -13,7 +13,23 @@ if 'strength' not in st.session_state:
 if 'cool' not in st.session_state:
     st.session_state.cool = 0
 
-st.title("🎮 断酒RPGアプリ")
+st.markdown("""
+<style>
+/* 画面全体を黒背景にして文字を白にする */
+body {
+    background-color: #000000;
+    color: white;
+}
+
+/* Streamlitの中身を含めた全体に適用 */
+html, .css-1d391kg, .css-ffhzg2 {
+    background-color: #000000;
+    color: white;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.title("🎮 断酒クエスト")
 
 # ✅ 今日断酒した？
 if st.button("🍺 今日お酒を我慢しました！"):
