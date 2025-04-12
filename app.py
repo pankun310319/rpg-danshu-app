@@ -79,8 +79,9 @@ input, textarea {
 # 【UI表示】
 # ======================
 st.title("🎮 断酒クエスト")
-# レベル計算
-continuation_days = int((df_all["日常の選択"] != "").astype(int).sum())
+# レベル計算（CSV読み込み → 継続日数 → レベル＆進行度）
+df_all = pd.read_csv(csv_path)
+continuation_days = int((df_all["日別効果"] != "").astype(int).sum())
 level = get_level(continuation_days)
 progress = get_level_progress(continuation_days)
 
