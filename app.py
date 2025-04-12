@@ -41,18 +41,34 @@ if exercise:
     st.success("筋力+1、かっこよさ+1")
 
 # 🧠 ステータス表示
-st.markdown("### 🧠 現在のステータス")
-
-import pandas as pd
-stats = {
-    "ステータス": ["💰 ゴールド", "❤️ 健康", "🧘 精神力", "💪 筋力", "😎 かっこよさ"],
-    "数値": [
-        st.session_state.gold,
-        st.session_state.health,
-        st.session_state.mental,
-        st.session_state.strength,
-        st.session_state.cool,
-    ]
+st.markdown("## 🧙‍♂️ ステータス画面")
+st.markdown("""
+<style>
+.stat-table {
+    border: 3px double #888888;
+    background-color: #f9f9f0;
+    padding: 10px;
+    font-size: 18px;
+    font-family: 'Courier New', monospace;
+    width: fit-content;
 }
-df = pd.DataFrame(stats)
-st.table(df)
+.stat-table .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+}
+</style>
+<div class="stat-table">
+  <div class="row"><span>💰 ゴールド</span><span>{gold} G</span></div>
+  <div class="row"><span>❤️ さいだいHP</span><span>{health}</span></div>
+  <div class="row"><span>🧘‍♂️ さいだいMP</span><span>{mental}</span></div>
+  <div class="row"><span>💪 こうげき力</span><span>{strength}</span></div>
+  <div class="row"><span>😎 みりょく</span><span>{cool}</span></div>
+</div>
+""".format(
+    gold=st.session_state.gold,
+    health=st.session_state.health,
+    mental=st.session_state.mental,
+    strength=st.session_state.strength,
+    cool=st.session_state.cool
+), unsafe_allow_html=True)
