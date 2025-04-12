@@ -21,6 +21,13 @@ body, .stApp {
     color: white;
 }
 
+/* Streamlitのボタンテキストを白に強制 */
+.stButton > button {
+    color: white !important;
+    background-color: #333333;
+    border: 1px solid #888;
+}
+
 /* 入力フォームやボタンなども背景を黒っぽく */
 div[data-testid="stHorizontalBlock"] > div {
     background-color: #111111;
