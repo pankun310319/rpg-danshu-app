@@ -22,12 +22,22 @@ if 'choice' not in st.session_state:
 today = str(date.today())
 csv_path = "record.csv"
 
+# 初回作成時のカラム
+default_columns = [
+    "日付", "日常の選択", "節約額", "運動", "理不尽レベル",
+    "ゴールド", "健康", "精神力", "筋力", "かっこよさ", "日別効果"
+]
+
+# CSV存在チェック＋読み込み
 if not os.path.exists(csv_path):
-    df_init = pd.DataFrame(columns=[
-        "日付", "日常の選択", "節約額", "運動", "理不尽レベル",
-        "ゴールド", "健康", "精神力", "筋力", "かっこよさ", "日別効果"
-    ])
-    df_init.to_csv(csv_path, index=False)
+    pd.DataFrame(columns=default_columns).to_csv(csv_path, index=False)
+
+df_all = pd.read_csv(csv_path)
+
+# 列が足りなければ追加
+for col in default_columns:
+    if col not in df_all.columns:
+        df_all[col] = ""
 
 # ======================
 # 【関数：レベル計算】
@@ -64,6 +74,12 @@ input, textarea {
     border-radius: 6px;
     padding: 5px;
 }
+.stNumberInput > div > div {
+    background-color: #111 !important;
+    color: white !important;
+    border-radius: 6px;
+    border: 1px solid #888;
+}
 .stButton > button {
     background-color: #222;
     color: white !important;
@@ -72,6 +88,9 @@ input, textarea {
     border-radius: 6px;
     padding: 6px 12px;
     margin: 4px 0;
+}
+label, .stTextInput > label, .stNumberInput > label {
+    color: white !important;
 }
 .stat-table {
     border: 3px double #888;
@@ -140,7 +159,6 @@ else:
 # ======================
 # 【UI：レベル表示】
 # ======================
-df_all = pd.read_csv(csv_path)
 continuation_days = int((df_all["日別効果"] != "").astype(int).sum())
 level = get_level(continuation_days)
 progress = get_level_progress(continuation_days)
@@ -150,7 +168,7 @@ st.markdown(f"🗡 レベル: {level}（続けて {continuation_days} 日）")
 st.progress(progress)
 
 # ======================
-# 【ステータス】
+# 【ステータス表示】
 # ======================
 st.markdown("""
 <div class="stat-table">
