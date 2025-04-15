@@ -19,28 +19,35 @@ if 'cool' not in st.session_state:
 if 'choice' not in st.session_state:
     st.session_state.choice = ""
 
+# ======================
+# 【日付とCSV読み込み】
+# ======================
 today = str(date.today())
 csv_path = "record.csv"
-
-# 初回作成時のカラム
 default_columns = [
-    "日付", "日常の選択", "節約額", "運動", "理不尽レベル",
+    "日付", "日誌の選択", "節約額", "運動", "理不尽レベル",
     "ゴールド", "健康", "精神力", "筋力", "かっこよさ", "日別効果"
 ]
 
-# CSV存在チェック＋読み込み
 if not os.path.exists(csv_path):
     pd.DataFrame(columns=default_columns).to_csv(csv_path, index=False)
 
 df_all = pd.read_csv(csv_path)
-
-# 列が足りなければ追加
 for col in default_columns:
     if col not in df_all.columns:
         df_all[col] = ""
 
+# 最新ステータスを復元
+if not df_all.empty:
+    last_row = df_all.iloc[-1]
+    st.session_state.gold = int(last_row["ゴールド"])
+    st.session_state.health = int(last_row["健康"])
+    st.session_state.mental = int(last_row["精神力"])
+    st.session_state.strength = int(last_row["筋力"])
+    st.session_state.cool = int(last_row["かっこよさ"])
+
 # ======================
-# 【関数：レベル計算】
+# 【関数】
 # ======================
 def get_level(days):
     if days == 0:
@@ -51,12 +58,14 @@ def get_level(days):
         return min(99, int(50 + (days - 100) * 0.25))
 
 def get_level_progress(days):
-    if days == 0:
-        return 0
-    elif days < 100:
-        return int((days / 100) * 50)
+    if days < 100:
+        current = int(days * 0.5)
+        next_required = (current + 1) * 2
     else:
-        return min(100, int(50 + ((days - 100) / 800) * 50))
+        current = int(50 + (days - 100) * 0.25)
+        next_required = 100 + (current - 50 + 1) * 4
+    remaining = max(0, next_required - days)
+    return min(1.0, days / next_required), remaining
 
 # ======================
 # 【CSSデザイン】
@@ -119,7 +128,7 @@ label, .stTextInput > label, .stNumberInput > label {
 """, unsafe_allow_html=True)
 
 # ======================
-# 【UI：断酒入力】
+# 【UI：断酒・節約・運動】
 # ======================
 st.title("🎮 断酒クエスト")
 st.header("🍺 今日の断酒状況")
@@ -128,6 +137,8 @@ col1, col2 = st.columns(2)
 with col1:
     if st.button("😇 飲まなかった"):
         st.session_state.choice = "飲まなかった"
+        st.session_state.health += 1
+        st.success("継続成功！さいだいHP +1")
 
 with col2:
     if st.button("⚔ 誘惑モンスター撃破！"):
@@ -137,9 +148,6 @@ with col2:
         st.session_state.mental += 1
         st.success("誘惑に打ち勝った！ +1500G 健康+1 精神+1")
 
-# ======================
-# 【UI：節約・運動】
-# ======================
 expense = st.number_input("🍱 今日の食費は？（円）", min_value=0, step=1)
 if st.button("💰 節約を計算"):
     saved = 1500 - expense
@@ -160,19 +168,17 @@ else:
     st.session_state.did_exercise = False
 
 # ======================
-# 【UI：レベル表示】
+# 【レベル表示】
 # ======================
 continuation_days = int((df_all["日別効果"] != "").astype(int).sum())
 level = get_level(continuation_days)
-progress = get_level_progress(continuation_days)
+progress, remaining_days = get_level_progress(continuation_days)
 
 st.markdown("## 🧙‍♂️ ステータス画面")
 st.markdown(f"🗡 レベル: {level}（続けて {continuation_days} 日）")
 st.progress(progress)
+st.caption(f"次のレベルまであと {remaining_days} 日")
 
-# ======================
-# 【ステータス表示】
-# ======================
 st.markdown("""
 <div class="stat-table">
   <div class="row"><span>💰 ゴールド</span><span>{} G</span></div>
@@ -193,6 +199,7 @@ st.markdown("""
 # 【理不尽モンスター操作】
 # ======================
 st.header("😡 理不尽モンスター操作")
+
 if 'irihuda_level' not in st.session_state:
     st.session_state.irihuda_level = ""
 
@@ -203,12 +210,14 @@ with col1:
         st.session_state.mental += 1
         st.session_state.irihuda_level = "Lv1"
         st.success("少しイラっとしたけど、よく耐えた！+200G 精神+1")
+
 with col2:
     if st.button("😡 中 (Lv2)"):
         st.session_state.gold += 500
         st.session_state.mental += 2
         st.session_state.irihuda_level = "Lv2"
         st.success("それなりにキツかったけど出し切った！+500G 精神+2")
+
 with col3:
     if st.button("🤬 強 (Lv3)"):
         st.session_state.gold += 1000
@@ -224,7 +233,7 @@ if st.button("📅 今日の結果をセーブ"):
     if today not in df["日付"].values:
         new_row = {
             "日付": today,
-            "日常の選択": st.session_state.choice,
+            "日誌の選択": st.session_state.choice,
             "節約額": st.session_state.get("saved_money", 0),
             "運動": "○" if st.session_state.did_exercise else "",
             "理不尽レベル": st.session_state.irihuda_level,
@@ -237,9 +246,9 @@ if st.button("📅 今日の結果をセーブ"):
         }
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         df.to_csv(csv_path, index=False)
-        st.success("セーブ完了！")
+        st.success("セーブ完了！📗")
     else:
-        st.warning("今日は既にセーブされています")
+        st.warning("今日は既にセーブ済みです")
 
 # ======================
 # 【記録表示】
