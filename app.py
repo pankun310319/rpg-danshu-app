@@ -8,55 +8,29 @@ from datetime import date
 # ======================
 if 'choice' not in st.session_state:
     st.session_state.choice = ""
+if 'irihuda_level' not in st.session_state:
+    st.session_state.irihuda_level = ""
 if 'saved_money' not in st.session_state:
     st.session_state.saved_money = 0
 if 'did_exercise' not in st.session_state:
     st.session_state.did_exercise = False
-if 'irihuda_level' not in st.session_state:
-    st.session_state.irihuda_level = ""
 
-today = str(date.today())
 csv_path = "record.csv"
+today = str(date.today())
+
 default_columns = [
-    "日付", "日誌の選択", "節約額", "運動", "理不尽レベル",
-    "ゴールド", "健康", "精神力", "筋力", "かっこよさ", "日別効果"
+    "日付", "日当日", "日常の選択", "日別約", "日別金",
+    "健康", "精神", "精神力", "筋力", "かっこよさ",
+    "節約額", "運動", "理不尽レベル", "ゴールド", "日別効果"
 ]
 
 if not os.path.exists(csv_path):
     pd.DataFrame(columns=default_columns).to_csv(csv_path, index=False)
 
-df_all = pd.read_csv(csv_path)
+df_all = pd.read_csv(csv_path).fillna(0)
 for col in default_columns:
     if col not in df_all.columns:
-        df_all[col] = ""
-
-# ======================
-# 【ステータスの累積再計算】
-# ======================
-gold = (
-    df_all["節約額"].fillna(0).sum()
-    + (df_all["日誌の選択"] == "誘惑モンスター撃破").sum() * 1500
-    + df_all["理不尽レベル"].map({"Lv1": 200, "Lv2": 500, "Lv3": 1000}).fillna(0).sum()
-)
-
-health = (
-    (df_all["節約額"].fillna(0) > 0).sum()
-    + df_all["日誌の選択"].isin(["飲まなかった", "誘惑モンスター撃破"]).sum()
-)
-
-mental = (
-    (df_all["日誌の選択"] == "誘惑モンスター撃破").sum()
-    + df_all["理不尽レベル"].map({"Lv1": 1, "Lv2": 2, "Lv3": 3}).fillna(0).sum()
-)
-
-strength = (df_all["運動"] == "○").sum()
-cool = strength
-
-st.session_state.gold = int(gold)
-st.session_state.health = int(health)
-st.session_state.mental = int(mental)
-st.session_state.strength = int(strength)
-st.session_state.cool = int(cool)
+        df_all[col] = 0
 
 # ======================
 # 【レベル計算】
@@ -70,76 +44,56 @@ def get_level(days):
         return min(99, int(50 + (days - 100) * 0.25))
 
 def get_level_progress(days):
-    if days < 100:
-        current = int(days * 0.5)
-        next_required = (current + 1) * 2
+    if days == 0:
+        return 0
+    elif days < 100:
+        return int((days / 100) * 50)
     else:
-        current = int(50 + (days - 100) * 0.25)
-        next_required = 100 + (current - 50 + 1) * 4
-    remaining = max(0, next_required - days)
-    return min(1.0, days / next_required), remaining
+        return min(100, int(50 + ((days - 100) / 800) * 50))
 
-continuation_days = int((df_all["日別効果"] != "").astype(int).sum())
+def get_days_to_next_level(days):
+    level = get_level(days)
+    if days < 100:
+        next_level_days = (level + 1) * 2
+    else:
+        next_level_days = 100 + ((level - 49) * 4)
+    return max(0, int(next_level_days - days))
+
+# ======================
+# 【ステータス累積計算】
+# ======================
+total_gold = int(df_all["\u30b4\u30fc\u30eb\u30c9"].sum())
+total_health = int(df_all["\u5065\u5eb7"].sum())
+total_mental = int(df_all["\u7cbe\u795e\u529b"].sum())
+total_strength = int(df_all["\u7b4b\u529b"].sum())
+total_cool = int(df_all["\u304bっこよさ"].sum())
+
+# ======================
+# 【レベルUI】
+# ======================
+continuation_days = int((df_all["\u65e5\u5225\u52b9\u679c"] != 0).astype(int).sum())
 level = get_level(continuation_days)
-progress, remaining_days = get_level_progress(continuation_days)
+progress = get_level_progress(continuation_days)
+days_to_next = get_days_to_next_level(continuation_days)
 
-# ======================
-# 【CSS（省略せず貼りたい場合は別途）】
-# ======================
-st.markdown(\"\"\"<style>
-body, .stApp { background-color: #000; color: white; }
-input, textarea {
-    background-color: #111 !important; color: white !important;
-    border: 1px solid #888 !important; border-radius: 6px; padding: 5px;
-}
-.stNumberInput input { background-color: #111 !important; color: white !important; }
-.stNumberInput button {
-    background-color: #222 !important; color: white !important;
-    border: 1px solid #888 !important;
-}
-.stButton > button {
-    background-color: #222; color: white !important;
-    font-weight: bold; border: 1px solid #888;
-    border-radius: 6px; padding: 6px 12px; margin: 4px 0;
-}
-label, .stTextInput > label, .stNumberInput > label {
-    color: white !important;
-}
-.stat-table {
-    border: 3px double #888; background-color: #111;
-    padding: 10px; font-size: 18px;
-    font-family: 'M PLUS Rounded 1c', sans-serif;
-    width: fit-content; color: white;
-}
-.stat-table .row {
-    display: flex; justify-content: space-between; padding: 3px 0;
-}
-.stat-table .row span:first-child { margin-right: 20px; }
-.stat-table .row span:last-child {
-    text-align: right; min-width: 50px; display: inline-block;
-}
-</style>\"\"\", unsafe_allow_html=True)
-
-# ======================
-# 【表示】
-# ======================
-st.title(\"🎮 断酒クエスト\")
-st.markdown(f\"## 🧙‍♂️ ステータス画面\\n🗡 レベル: {level}（続けて {continuation_days} 日）\")
+st.title("\ud83c\udfae 断酒クエスト")
+st.markdown("## \ud83e\uddd9\u200d\u2642\ufe0f ステータス画面")
+st.markdown(f"\u30fb\u30ec\u30d9\u30eb: {level} (続けて {continuation_days} 日)  \n\u6b21のレベルまで\uff1a残り{days_to_next}日")
 st.progress(progress)
-st.caption(f\"次のレベルまであと {remaining_days} 日\")
 
-st.markdown(\"\"\"<div class=\"stat-table\">
-  <div class=\"row\"><span>💰 ゴールド</span><span>{} G</span></div>
-  <div class=\"row\"><span>❤️ さいだいHP</span><span>{}</span></div>
-  <div class=\"row\"><span>🧘‍♂️ さいだいMP</span><span>{}</span></div>
-  <div class=\"row\"><span>💪 こうげき力</span><span>{}</span></div>
-  <div class=\"row\"><span>😎 かっこよさ</span><span>{}</span></div>
-</div>\"\"\".format(
-    st.session_state.gold,
-    st.session_state.health,
-    st.session_state.mental,
-    st.session_state.strength,
-    st.session_state.cool
+# ======================
+# 【累積表示】
+# ======================
+st.markdown("""
+<div class="stat-table">
+  <div class="row"><span>\ud83d\udeb0 \u30b4\u30fc\u30eb\u30c9</span><span>{} G</span></div>
+  <div class="row"><span>\u2764\ufe0f \u3055\u3044\u3060\u3044HP</span><span>{}</span></div>
+  <div class="row"><span>\ud83e\uddd8\u200d\u2642\ufe0f \u3055\u3044\u3060\u3044MP</span><span>{}</span></div>
+  <div class="row"><span>\ud83d\udcaa \u3053\u3046\u3052\u304d\u529b</span><span>{}</span></div>
+  <div class="row"><span>\ud83d\ude0e \u304b\u3063\u3053\u3088\u3055</span><span>{}</span></div>
+</div>
+""".format(
+    total_gold, total_health, total_mental, total_strength, total_cool
 ), unsafe_allow_html=True)
 
 # ======================
