@@ -6,22 +6,15 @@ from datetime import date
 # ======================
 # 【初期設定】
 # ======================
-if 'gold' not in st.session_state:
-    st.session_state.gold = 0
-if 'health' not in st.session_state:
-    st.session_state.health = 0
-if 'mental' not in st.session_state:
-    st.session_state.mental = 0
-if 'strength' not in st.session_state:
-    st.session_state.strength = 0
-if 'cool' not in st.session_state:
-    st.session_state.cool = 0
 if 'choice' not in st.session_state:
     st.session_state.choice = ""
+if 'saved_money' not in st.session_state:
+    st.session_state.saved_money = 0
+if 'did_exercise' not in st.session_state:
+    st.session_state.did_exercise = False
+if 'irihuda_level' not in st.session_state:
+    st.session_state.irihuda_level = ""
 
-# ======================
-# 【日付とCSV読み込み】
-# ======================
 today = str(date.today())
 csv_path = "record.csv"
 default_columns = [
@@ -38,24 +31,35 @@ for col in default_columns:
         df_all[col] = ""
 
 # ======================
-# 【累積ステータスの合計表示に変更】
+# 【ステータスの累積再計算】
 # ======================
-if not df_all.empty:
-    st.session_state.gold = int(df_all["節約額"].fillna(0).sum()) + \
-                            (df_all["日誌の選択"] == "誘惑モンスター撃破").sum() * 1500 + \
-                            df_all["理不尽レベル"].map({"Lv1": 200, "Lv2": 500, "Lv3": 1000}).fillna(0).sum()
-    
-    st.session_state.health = int( (df_all["節約額"] > 0).sum() +  # 節約成功
-                                  (df_all["日誌の選択"].isin(["飲まなかった", "誘惑モンスター撃破"])).sum() )
-    
-    st.session_state.mental = int( (df_all["日誌の選択"] == "誘惑モンスター撃破").sum() + 
-                                   df_all["理不尽レベル"].map({"Lv1": 1, "Lv2": 2, "Lv3": 3}).fillna(0).sum() )
-    
-    st.session_state.strength = int((df_all["運動"] == "○").sum())
-    st.session_state.cool = int((df_all["運動"] == "○").sum())
+gold = (
+    df_all["節約額"].fillna(0).sum()
+    + (df_all["日誌の選択"] == "誘惑モンスター撃破").sum() * 1500
+    + df_all["理不尽レベル"].map({"Lv1": 200, "Lv2": 500, "Lv3": 1000}).fillna(0).sum()
+)
+
+health = (
+    (df_all["節約額"].fillna(0) > 0).sum()
+    + df_all["日誌の選択"].isin(["飲まなかった", "誘惑モンスター撃破"]).sum()
+)
+
+mental = (
+    (df_all["日誌の選択"] == "誘惑モンスター撃破").sum()
+    + df_all["理不尽レベル"].map({"Lv1": 1, "Lv2": 2, "Lv3": 3}).fillna(0).sum()
+)
+
+strength = (df_all["運動"] == "○").sum()
+cool = strength
+
+st.session_state.gold = int(gold)
+st.session_state.health = int(health)
+st.session_state.mental = int(mental)
+st.session_state.strength = int(strength)
+st.session_state.cool = int(cool)
 
 # ======================
-# 【関数】
+# 【レベル計算】
 # ======================
 def get_level(days):
     if days == 0:
@@ -75,70 +79,73 @@ def get_level_progress(days):
     remaining = max(0, next_required - days)
     return min(1.0, days / next_required), remaining
 
+continuation_days = int((df_all["日別効果"] != "").astype(int).sum())
+level = get_level(continuation_days)
+progress, remaining_days = get_level_progress(continuation_days)
+
 # ======================
-# 【CSSデザイン】
+# 【CSS（省略せず貼りたい場合は別途）】
 # ======================
-st.markdown("""
-<style>
-body, .stApp {
-    background-color: #000;
-    color: white;
-}
+st.markdown(\"\"\"<style>
+body, .stApp { background-color: #000; color: white; }
 input, textarea {
-    background-color: #111 !important;
-    color: white !important;
-    border: 1px solid #888 !important;
-    border-radius: 6px;
-    padding: 5px;
+    background-color: #111 !important; color: white !important;
+    border: 1px solid #888 !important; border-radius: 6px; padding: 5px;
 }
-.stNumberInput input {
-    background-color: #111 !important;
-    color: white !important;
-}
+.stNumberInput input { background-color: #111 !important; color: white !important; }
 .stNumberInput button {
-    background-color: #222 !important;
-    color: white !important;
+    background-color: #222 !important; color: white !important;
     border: 1px solid #888 !important;
 }
 .stButton > button {
-    background-color: #222;
-    color: white !important;
-    font-weight: bold;
-    border: 1px solid #888;
-    border-radius: 6px;
-    padding: 6px 12px;
-    margin: 4px 0;
+    background-color: #222; color: white !important;
+    font-weight: bold; border: 1px solid #888;
+    border-radius: 6px; padding: 6px 12px; margin: 4px 0;
 }
 label, .stTextInput > label, .stNumberInput > label {
     color: white !important;
 }
 .stat-table {
-    border: 3px double #888;
-    background-color: #111;
-    padding: 10px;
-    font-size: 18px;
+    border: 3px double #888; background-color: #111;
+    padding: 10px; font-size: 18px;
     font-family: 'M PLUS Rounded 1c', sans-serif;
-    width: fit-content;
-    color: white;
+    width: fit-content; color: white;
 }
 .stat-table .row {
-    display: flex;
-    justify-content: space-between;
-    padding: 3px 0;
+    display: flex; justify-content: space-between; padding: 3px 0;
 }
 .stat-table .row span:first-child { margin-right: 20px; }
 .stat-table .row span:last-child {
-    text-align: right;
-    min-width: 50px;
-    display: inline-block;
+    text-align: right; min-width: 50px; display: inline-block;
 }
-</style>
-""", unsafe_allow_html=True)
+</style>\"\"\", unsafe_allow_html=True)
 
 # ======================
-# 【UI：断酒・節約・運動】
+# 【表示】
 # ======================
-st.title("🎮 断酒クエスト")
+st.title(\"🎮 断酒クエスト\")
+st.markdown(f\"## 🧙‍♂️ ステータス画面\\n🗡 レベル: {level}（続けて {continuation_days} 日）\")
+st.progress(progress)
+st.caption(f\"次のレベルまであと {remaining_days} 日\")
+
+st.markdown(\"\"\"<div class=\"stat-table\">
+  <div class=\"row\"><span>💰 ゴールド</span><span>{} G</span></div>
+  <div class=\"row\"><span>❤️ さいだいHP</span><span>{}</span></div>
+  <div class=\"row\"><span>🧘‍♂️ さいだいMP</span><span>{}</span></div>
+  <div class=\"row\"><span>💪 こうげき力</span><span>{}</span></div>
+  <div class=\"row\"><span>😎 かっこよさ</span><span>{}</span></div>
+</div>\"\"\".format(
+    st.session_state.gold,
+    st.session_state.health,
+    st.session_state.mental,
+    st.session_state.strength,
+    st.session_state.cool
+), unsafe_allow_html=True)
+
+# ======================
+# 【断酒・節約・運動 入力】
+# ======================
+
 st.header("🍺 今日の断酒状況")
 
 col1, col2 = st.columns(2)
@@ -176,40 +183,9 @@ else:
     st.session_state.did_exercise = False
 
 # ======================
-# 【レベル表示】
-# ======================
-continuation_days = int((df_all["日別効果"] != "").astype(int).sum())
-level = get_level(continuation_days)
-progress, remaining_days = get_level_progress(continuation_days)
-
-st.markdown("## 🧙‍♂️ ステータス画面")
-st.markdown(f"🗡 レベル: {level}（続けて {continuation_days} 日）")
-st.progress(progress)
-st.caption(f"次のレベルまであと {remaining_days} 日")
-
-st.markdown("""
-<div class="stat-table">
-  <div class="row"><span>💰 ゴールド</span><span>{} G</span></div>
-  <div class="row"><span>❤️ さいだいHP</span><span>{}</span></div>
-  <div class="row"><span>🧘‍♂️ さいだいMP</span><span>{}</span></div>
-  <div class="row"><span>💪 こうげき力</span><span>{}</span></div>
-  <div class="row"><span>😎 かっこよさ</span><span>{}</span></div>
-</div>
-""".format(
-    st.session_state.gold,
-    st.session_state.health,
-    st.session_state.mental,
-    st.session_state.strength,
-    st.session_state.cool
-), unsafe_allow_html=True)
-
-# ======================
 # 【理不尽モンスター操作】
 # ======================
 st.header("😡 理不尽モンスター操作")
-
-if 'irihuda_level' not in st.session_state:
-    st.session_state.irihuda_level = ""
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -218,14 +194,12 @@ with col1:
         st.session_state.mental += 1
         st.session_state.irihuda_level = "Lv1"
         st.success("少しイラっとしたけど、よく耐えた！+200G 精神+1")
-
 with col2:
     if st.button("😡 中 (Lv2)"):
         st.session_state.gold += 500
         st.session_state.mental += 2
         st.session_state.irihuda_level = "Lv2"
         st.success("それなりにキツかったけど出し切った！+500G 精神+2")
-
 with col3:
     if st.button("🤬 強 (Lv3)"):
         st.session_state.gold += 1000
