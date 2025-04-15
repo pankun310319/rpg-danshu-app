@@ -37,14 +37,22 @@ for col in default_columns:
     if col not in df_all.columns:
         df_all[col] = ""
 
-# 最新ステータスを復元
+# ======================
+# 【累積ステータスの合計表示に変更】
+# ======================
 if not df_all.empty:
-    last_row = df_all.iloc[-1]
-    st.session_state.gold = int(last_row["ゴールド"])
-    st.session_state.health = int(last_row["健康"])
-    st.session_state.mental = int(last_row["精神力"])
-    st.session_state.strength = int(last_row["筋力"])
-    st.session_state.cool = int(last_row["かっこよさ"])
+    st.session_state.gold = int(df_all["節約額"].fillna(0).sum()) + \
+                            (df_all["日誌の選択"] == "誘惑モンスター撃破").sum() * 1500 + \
+                            df_all["理不尽レベル"].map({"Lv1": 200, "Lv2": 500, "Lv3": 1000}).fillna(0).sum()
+    
+    st.session_state.health = int( (df_all["節約額"] > 0).sum() +  # 節約成功
+                                  (df_all["日誌の選択"].isin(["飲まなかった", "誘惑モンスター撃破"])).sum() )
+    
+    st.session_state.mental = int( (df_all["日誌の選択"] == "誘惑モンスター撃破").sum() + 
+                                   df_all["理不尽レベル"].map({"Lv1": 1, "Lv2": 2, "Lv3": 3}).fillna(0).sum() )
+    
+    st.session_state.strength = int((df_all["運動"] == "○").sum())
+    st.session_state.cool = int((df_all["運動"] == "○").sum())
 
 # ======================
 # 【関数】
