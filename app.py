@@ -246,20 +246,9 @@ if st.button("📅 今日の結果をセーブ"):
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         df.to_csv(csv_path, index=False)
         st.success("セーブ完了！")
-
-        # ✅ ← ここに追記してください
-        def download_csv_button(file_path, label="📥 CSVダウンロード"):
-            with open(file_path, "rb") as f:
-                content = f.read()
-            b64 = base64.b64encode(content).decode()
-            href = f'<a href="data:file/csv;base64,{b64}" download="{file_path}">{label}</a>'
-            st.markdown(href, unsafe_allow_html=True)
-
-        download_csv_button("record.csv")
-
     else:
         st.warning("今日はすでにセーブされています")
-        
+
 # ======================
 # 【記録表示】
 # ======================
@@ -267,3 +256,17 @@ if st.button("📂 記録をひらく"):
     st.markdown("## 📖 記録一覧")
     df_show = pd.read_csv(csv_path)
     st.dataframe(df_show, use_container_width=True)
+
+# ======================
+# 【CSVダウンロードボタン：常時表示】
+# ======================
+import base64
+
+def download_csv_button(file_path, label="📥 CSVダウンロード"):
+    with open(file_path, "rb") as f:
+        content = f.read()
+    b64 = base64.b64encode(content).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="{file_path}">{label}</a>'
+    st.markdown(href, unsafe_allow_html=True)
+
+download_csv_button("record.csv")
