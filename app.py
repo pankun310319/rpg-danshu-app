@@ -8,43 +8,56 @@ today = str(date.today())
 # ======================
 # 【初期設定】
 # ======================
-defaults = {
-    'gold': 0,
-    'health': 0,
-    'mental': 0,
-    'strength': 0,
-    'cool': 0,
-    'choice': "",
-    'did_exercise': False,
-    'irihuda_level': "",
-    'wisdom': 0,
-    'mp': 7,
-    'max_mp': 7,
-    'last_access': today,
-    'drink_action_done': False
-}
-for key, val in defaults.items():
-    if key not in st.session_state:
-        st.session_state[key] = val
+if 'gold' not in st.session_state:
+    st.session_state.gold = 0
+if 'health' not in st.session_state:
+    st.session_state.health = 0
+if 'mental' not in st.session_state:
+    st.session_state.mental = 0
+if 'strength' not in st.session_state:
+    st.session_state.strength = 0
+if 'cool' not in st.session_state:
+    st.session_state.cool = 0
+if 'choice' not in st.session_state:
+    st.session_state.choice = ""
+if 'did_exercise' not in st.session_state:
+    st.session_state.did_exercise = False
+if 'irihuda_level' not in st.session_state:
+    st.session_state.irihuda_level = ""
+if 'wisdom' not in st.session_state:
+    st.session_state.wisdom = 0
+if 'mp' not in st.session_state:
+    st.session_state.mp = 7
+if 'max_mp' not in st.session_state:
+    st.session_state.max_mp = 7
+if 'last_access' not in st.session_state:
+    st.session_state.last_access = today
+if 'drink_action_done' not in st.session_state:
+    st.session_state.drink_action_done = False
 
-# MPの自動回復
+# ポップアップ状態管理
+if 'confirm_mode' not in st.session_state:
+    st.session_state.confirm_mode = None  # "reverse" or "normal"
+if 'pending_summary' not in st.session_state:
+    st.session_state.pending_summary = ""
+if 'pending_date' not in st.session_state:
+    st.session_state.pending_date = ""
+
+# MP回復処理
 if st.session_state.last_access != today:
     st.session_state.mp = min(st.session_state.mp + 1, st.session_state.max_mp)
     st.session_state.last_access = today
 
-# CSV準備
+# CSVファイル設定
 csv_path = "record.csv"
 columns = [
     "日付", "日常の選択", "節約額", "運動", "理不尽レベル",
     "ゴールド", "健康", "精神力", "精神", "筋力", "かっこよさ", "日別効果"
 ]
-
 if not os.path.exists(csv_path):
     pd.DataFrame(columns=columns).to_csv(csv_path, index=False)
 
 df_all = pd.read_csv(csv_path)
-
-# 不足列の補完
 for col in columns:
     if col not in df_all.columns:
         df_all[col] = 0 if col in ["ゴールド", "健康", "精神力", "精神", "筋力", "かっこよさ", "節約額"] else ""
@@ -57,12 +70,21 @@ total_strength = df_all["筋力"].sum()
 total_cool = df_all["かっこよさ"].sum()
 continuation_days = (df_all["日別効果"] != "").sum()
 
-# レベル計算
 def get_level(days):
-    return 0 if days == 0 else min(99, int(days * 0.5) if days < 100 else 50 + int((days - 100) * 0.25))
+    if days == 0:
+        return 0
+    elif days < 100:
+        return int(days * 0.5)
+    else:
+        return min(99, int(50 + (days - 100) * 0.25))
 
 def get_level_progress(days):
-    return 0 if days == 0 else int((days / 100) * 50) if days < 100 else min(100, 50 + int((days - 100) / 800 * 50))
+    if days == 0:
+        return 0
+    elif days < 100:
+        return int((days / 100) * 50)
+    else:
+        return min(100, int(50 + ((days - 100) / 800) * 50))
 
 def get_next_level_info(days):
     now = get_level(days)
@@ -71,23 +93,19 @@ def get_next_level_info(days):
             return d - days
     return "max"
 
-level = get_level(continuation_days)
-progress = get_level_progress(continuation_days)
-next_need = get_next_level_info(continuation_days)
+# ✅ ポップアップ確認モード（モーダル風）
+def render_popup():
+    st.markdown("### 📜 記録の確認")
+    st.markdown("以下の内容で保存します。よろしいですか？")
+    st.info(st.session_state.pending_summary)
+    col1, col2 = st.columns(2)
+    if col1.button("✅ はい", key="confirm_yes"):
+        return "confirm"
+    elif col2.button("❌ いいえ（しゅうせい）", key="confirm_no"):
+        return "cancel"
+    return None
 
-# ======================
-# 【ポップアップ式確認ダイアログ】
-# ======================
-def confirm_save(summary_text, key_prefix):
-    st.markdown("### 🎮 リバースをつかう" if key_prefix == "reverse" else "### 💾 今日のぼうけんを記録する")
-    with st.container():
-        st.markdown("#### ぼうけんの内容を確認してください")
-        st.markdown(f"<div style='background-color:#222;padding:10px;border-radius:8px;'>{summary_text}</div>", unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        confirm = col1.button("✅ はい", key=f"{key_prefix}_confirm_button")
-        cancel = col2.button("❌ いいえ（しゅうせい）", key=f"{key_prefix}_cancel_button")
-        return confirm and not cancel
-
+＃＃＃＃＃＃＃
 
 # ======================
 # 【CSSデザイン】
@@ -145,6 +163,14 @@ label, .stTextInput > label, .stNumberInput > label {
     text-align: right;
     min-width: 50px;
     display: inline-block;
+}
+.confirm-popup {
+    background-color: #222;
+    border: 2px solid #555;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 10px;
+    text-align: center;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -249,11 +275,11 @@ st.header("🪄 リバース：-6（過去の記録入力）")
 if st.session_state.mp < 6:
     st.warning(f"MPが足りません…（現在のMP: {st.session_state.mp}）")
 else:
-    with st.expander("📅 過去の日付を選んで記録する"):
-        st.caption("※ 先に『飲まなかった』『節約計算』『運動』などの行動を入力してから、日付を選んで『🪄 リバース発動』を押してください")
+    reverse_mode = st.checkbox("📅 リバース記録モード", value=False)
+    if reverse_mode:
         reverse_date = st.date_input("🗓 入力したい過去の日付を選んでください")
         reverse_summary = f"""
-{reverse_date} に以下の内容を記録します：  
+🪄 リバース対象日: {reverse_date}  
 断酒：{st.session_state.choice or '未選択'}  
 節約額：{saved}円  
 運動：{"あり" if st.session_state.did_exercise else "なし"}  
@@ -282,7 +308,7 @@ else:
                 }
                 df_reverse = pd.concat([df_reverse, pd.DataFrame([new_row])], ignore_index=True)
                 df_reverse.to_csv(csv_path, index=False)
-                st.success(f"🪄 リバース魔法成功！{reverse_date} に記録を追加しました（MP -6）")
+                st.success(f"🪄 リバース成功！{reverse_date} に記録しました（MP -6）")
 
 # ======================
 # 【セーブ処理】
@@ -290,7 +316,7 @@ else:
 st.header("📅 今日の記録")
 
 today_summary = f"""
-{today} に以下の内容を記録します：  
+📅 今日: {today} に記録する内容：  
 断酒：{st.session_state.choice or '未選択'}  
 節約額：{saved}円  
 運動：{"あり" if st.session_state.did_exercise else "なし"}  
@@ -318,8 +344,8 @@ if confirm_save(today_summary, "normal"):
         df.to_csv(csv_path, index=False)
         st.success("📅 今日の記録をセーブしました！")
     else:
-        st.warning("⚠️ 今日はすでに記録されています。")
-        
+        st.warning("⚠️ 今日はすでに記録があります。")
+
 # ======================
 # 【記録表示】
 # ======================
