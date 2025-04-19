@@ -170,7 +170,9 @@ label, .stTextInput > label, .stNumberInput > label {
     justify-content: space-between;
     padding: 3px 0;
 }
-.stat-table .row span:first-child { margin-right: 20px; }
+.stat-table .row span:first-child {
+    margin-right: 20px;
+}
 .stat-table .row span:last-child {
     text-align: right;
     min-width: 50px;
@@ -183,6 +185,18 @@ label, .stTextInput > label, .stNumberInput > label {
     margin: 20px 0;
     border-radius: 10px;
     text-align: center;
+}
+div[data-testid="stCheckbox"] > div {
+    background-color: #222;
+    border: 1px solid #888;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    font-weight: bold;
+    color: white;
+}
+.css-1t3gfev {  /* st.info の内容の文字色強制 */
+    color: white !important;
 }
 </style>
 """, unsafe_allow_html=True)
