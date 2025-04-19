@@ -5,93 +5,6 @@ from datetime import date
 
 today = str(date.today())
 
-# ======== 🎨 ドラクエ風CSSデザイン ==========
-
-st.markdown("""
-<style>
-body, .stApp {
-    background-color: #000;
-    color: white;
-    font-family: 'M PLUS Rounded 1c', sans-serif;
-}
-input, textarea {
-    background-color: #112233 !important;
-    color: #FFFFAA !important;
-    border: 2px solid #888 !important;
-    border-radius: 6px;
-    padding: 5px;
-}
-.stNumberInput input {
-    background-color: #112233 !important;
-    color: #FFFFAA !important;
-}
-.stNumberInput button {
-    background-color: #223344 !important;
-    color: white !important;
-    border: 1px solid #aaa !important;
-}
-.stButton > button {
-    background-color: #223344;
-    color: #FFFFAA !important;
-    font-weight: bold;
-    border: 2px solid #AAA;
-    border-radius: 8px;
-    padding: 6px 14px;
-    margin: 6px 0;
-    font-size: 16px;
-}
-.stButton > button:hover {
-    background-color: #334455;
-}
-label, .stTextInput > label, .stNumberInput > label {
-    color: white !important;
-}
-.stat-table {
-    border: 4px double #DDD;
-    background-color: #111C2E;
-    padding: 12px;
-    font-size: 18px;
-    width: fit-content;
-    color: #FFFFAA;
-}
-.stat-table .row {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 0;
-}
-.stat-table .row span:first-child {
-    margin-right: 20px;
-    color: #CCCCCC;
-}
-.stat-table .row span:last-child {
-    text-align: right;
-    min-width: 60px;
-    display: inline-block;
-    color: #FFFFAA;
-}
-.confirm-popup {
-    background-color: #223344;
-    border: 2px solid #AAA;
-    padding: 20px;
-    margin: 20px 0;
-    border-radius: 10px;
-    text-align: center;
-}
-div[data-testid="stCheckbox"] > div {
-    background-color: #112233;
-    border: 1px solid #aaa;
-    padding: 8px 12px;
-    border-radius: 6px;
-    display: inline-block;
-    font-weight: bold;
-    color: #FFFFAA;
-}
-.css-1t3gfev {
-    color: white !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
 # ======================
 # 【初期設定】
 # ======================
@@ -100,25 +13,27 @@ defaults = {
     'choice': "", 'did_exercise': False, 'drink_action_done': False,
     'irihuda_weak': 0, 'irihuda_mid': 0, 'irihuda_strong': 0,
     'expenses': [], 'aerobic_km': 0.0, 'aerobic_steps': 0,
-    'reverse_mode': False, 'confirm_mode': None, 'pending_summary': "", 'pending_date': "",
+    'reverse_mode': False, 'confirm_mode': None,
+    'pending_summary': "", 'pending_date': "", 'last_saved_date': "",
     'mp': 7, 'max_mp': 7, 'last_access': today
 }
 for key, value in defaults.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
-# MP回復処理
-if st.session_state.last_access != today:
-    st.session_state.mp = min(st.session_state.mp + 1, st.session_state.max_mp)
-    st.session_state.last_access = today
+# ======================
+# 【関数：今日の食費を計算】
+# ======================
+def calculate_today_expense():
+    return sum(st.session_state.expenses)
 
 # ======================
-# 【CSV読み込みと整備】
+# 【CSVファイル読み込み】
 # ======================
 csv_path = "record.csv"
 columns = [
     "日付", "日常の選択", "節約額", "運動（筋トレ）", "有酸素距離(km)", "歩数",
-    "理不尽弱", "理不尽中", "理不尽強",
+    "理不尽Lv1", "理不尽Lv2", "理不尽Lv3",
     "ゴールド", "健康", "精神力", "筋力", "かっこよさ", "かしこさ", "日別効果"
 ]
 if not os.path.exists(csv_path):
@@ -127,7 +42,7 @@ if not os.path.exists(csv_path):
 df_all = pd.read_csv(csv_path)
 for col in columns:
     if col not in df_all.columns:
-        df_all[col] = 0 if col not in ["日付", "日常の選択", "日別効果"] else ""
+        df_all[col] = 0 if col not in ["日付", "日常の選択", "日別効果", "運動（筋トレ）"] else ""
 
 # ======================
 # 【ステータス計算】
@@ -166,6 +81,40 @@ def get_next_level_info(days):
 level = get_level(continuation_days)
 progress = get_level_progress(continuation_days)
 next_need = get_next_level_info(continuation_days)
+
+# ======================
+# 【ドラクエ風ステータスデザイン】
+# ======================
+st.markdown("""
+<style>
+.stat-table {
+    background-color: #111A22;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 18px;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    width: fit-content;
+    color: #F5F5F5;
+}
+.stat-table .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+}
+.stat-table .row span:first-child {
+    margin-right: 20px;
+    font-weight: bold;
+}
+.stat-table .row span:last-child {
+    text-align: right;
+    min-width: 80px;
+    display: inline-block;
+    font-weight: bold;
+    color: #ffff99;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ======================
 # 【UI：ステータス表示】
@@ -217,7 +166,7 @@ elif col2.button("⚔ 誘惑モンスター撃破", key="drink_defeat"):
         st.info("すでに選択されています")
 
 # ======================
-# 【UI：食費記録（1回ずつ）】
+# 【UI：食費記録】
 # ======================
 st.markdown("### 🍱 食費の記録（1回ごと）")
 expense_input = st.number_input("今回の食費（円）", min_value=0, step=1, key="expense_input")
@@ -250,7 +199,7 @@ with col_ex2.expander("🚶 有酸素運動"):
             st.success(f"{steps_input}歩 = {converted_km}km を記録！")
 
 # ======================
-# 【UI：理不尽モンスター討伐（累計可）】
+# 【UI：理不尽モンスター討伐（累計）】
 # ======================
 st.markdown("### 😡 理不尽モンスター討伐")
 col_i1, col_i2, col_i3 = st.columns(3)
@@ -271,63 +220,57 @@ if col_i3.button("🤬 強 (Lv3)", key="iri_strong"):
     st.success("Lv3 討伐！ +1000G 精神+3")
 
 # ======================
-# 【UI：記録セーブ/リバース選択ドロップダウン】
+# 【UI：記録セーブ/リバース選択】
 # ======================
 st.markdown("---")
 dropdown_option = st.selectbox("📦 記録またはリバースを選択", ["選択してください", "📅 今日の記録をセーブ", "🪄 リバース魔法を使う"], key="record_mode")
 
-def confirm_save(summary_text, key_prefix):
-    st.markdown("### 📜 記録の確認")
-    st.markdown("以下の内容で保存します。よろしいですか？")
-    st.info(summary_text)
-    col1, col2 = st.columns(2)
-    confirm = col1.button("✅ はい", key=f"{key_prefix}_confirm_button")
-    cancel = col2.button("❌ いいえ（しゅうせい）", key=f"{key_prefix}_cancel_button")
-    return confirm and not cancel
-
 # ======================
-# 【記録保存とCSV出力処理】
+# 【セーブ処理】
 # ======================
-
-def calculate_today_expense():
-    return sum(st.session_state.expenses)
-
 def save_record(date_str, mode="normal"):
     df = pd.read_csv(csv_path)
     if date_str in df["日付"].values:
         st.warning("⚠️ この日はすでに記録されています。")
         return
-
     new_row = {
         "日付": date_str,
         "日常の選択": st.session_state.choice,
         "節約額": 1500 - calculate_today_expense() if calculate_today_expense() < 1500 else 0,
-        "運動": "筋トレ" if st.session_state.did_exercise else "",
-        "理不尽レベル": "",  # 累計記録のため空白
+        "運動（筋トレ）": "○" if st.session_state.did_exercise else "",
+        "有酸素距離(km)": round(st.session_state.aerobic_km, 2),
+        "歩数": st.session_state.aerobic_steps,
+        "理不尽Lv1": st.session_state.irihuda_weak,
+        "理不尽Lv2": st.session_state.irihuda_mid,
+        "理不尽Lv3": st.session_state.irihuda_strong,
         "ゴールド": st.session_state.gold,
         "健康": st.session_state.health,
         "精神力": st.session_state.mental,
-        "精神": "",
         "筋力": st.session_state.strength,
         "かっこよさ": st.session_state.cool,
+        "かしこさ": st.session_state.wisdom,
         "日別効果": "リバース記録" if mode == "reverse" else "記録済み"
     }
-
-    # 新たな累積記録の補足列（あとで確認用）
-    new_row["理不尽Lv1"] = st.session_state.irihuda_weak
-    new_row["理不尽Lv2"] = st.session_state.irihuda_mid
-    new_row["理不尽Lv3"] = st.session_state.irihuda_strong
-    new_row["有酸素距離(km)"] = round(st.session_state.aerobic_km, 3)
-    new_row["食費合計"] = calculate_today_expense()
-
     df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
     df.to_csv(csv_path, index=False)
-    st.success(f"✅ {date_str} の記録を保存しました！")
+    st.session_state.last_access = today  # MPの自動回復防止
+    st.success(f"{date_str} の記録を保存しました！")
 
 # ======================
-# 【セーブ or リバースの選択】
+# 【確認表示用関数】
 # ======================
+def confirm_save(summary_text, key_prefix):
+    st.markdown("### 📜 記録の確認")
+    st.markdown("以下の内容で保存します。よろしいですか？")
+    st.info(summary_text)
+    col1, col2 = st.columns(2)
+    confirm = col1.button("✅ はい", key=f"{key_prefix}_confirm")
+    cancel = col2.button("❌ いいえ（しゅうせい）", key=f"{key_prefix}_cancel")
+    return confirm and not cancel
 
+# ======================
+# 【セーブ or リバース分岐処理】
+# ======================
 if dropdown_option == "📅 今日の記録をセーブ":
     today_summary = f'''
 📅 今日: {today}
@@ -343,7 +286,7 @@ elif dropdown_option == "🪄 リバース魔法を使う":
     if st.session_state.mp < 6:
         st.warning(f"MPが足りません（現在のMP: {st.session_state.mp}）")
     else:
-        reverse_date = st.date_input("🗓 記録したい過去の日付を選んでください")
+        reverse_date = st.date_input("📅 記録したい過去の日付を選んでください")
         reverse_summary = f'''
 🪄 リバース対象日: {reverse_date}
 断酒：{st.session_state.choice or '未選択'}
@@ -367,7 +310,6 @@ if st.button("📂 記録をひらく"):
 # 【CSVダウンロード】
 # ======================
 import base64
-
 def download_csv_button(file_path, label="📥 CSVダウンロード"):
     with open(file_path, "rb") as f:
         content = f.read()
@@ -376,3 +318,6 @@ def download_csv_button(file_path, label="📥 CSVダウンロード"):
     st.markdown(href, unsafe_allow_html=True)
 
 download_csv_button("record.csv")
+
+
+
