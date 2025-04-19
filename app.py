@@ -276,6 +276,15 @@ if col_i3.button("🤬 強 (Lv3)", key="iri_strong"):
 st.markdown("---")
 dropdown_option = st.selectbox("📦 記録またはリバースを選択", ["選択してください", "📅 今日の記録をセーブ", "🪄 リバース魔法を使う"], key="record_mode")
 
+def confirm_save(summary_text, key_prefix):
+    st.markdown("### 📜 記録の確認")
+    st.markdown("以下の内容で保存します。よろしいですか？")
+    st.info(summary_text)
+    col1, col2 = st.columns(2)
+    confirm = col1.button("✅ はい", key=f"{key_prefix}_confirm_button")
+    cancel = col2.button("❌ いいえ（しゅうせい）", key=f"{key_prefix}_cancel_button")
+    return confirm and not cancel
+
 # ======================
 # 【記録保存とCSV出力処理】
 # ======================
