@@ -95,9 +95,24 @@ def get_next_level_info(days):
             return d - days
     return "max"
 
+def confirm_save(summary_text, key_prefix):
+    with st.expander("💾 記録内容を確認してください"):
+        st.markdown(summary_text)
+        return st.button("✅ この内容で保存する", key=f"{key_prefix}_confirm_button")
+
+
 level = get_level(continuation_days)
 progress = get_level_progress(continuation_days)
 next_need = get_next_level_info(continuation_days)
+
+# ======================
+# 【確認ダイアログ関数】
+# ======================
+def confirm_save(summary_text, button_key):
+    with st.expander(f"確認: {button_key}", expanded=True):
+        st.markdown("### 次の内容でセーブします:")
+        st.info(summary_text)
+        return st.button("上記の内容で確定する", key=f"confirm_{button_key}")
 
 # ======================
 # 【CSSデザイン】
@@ -262,7 +277,15 @@ else:
     with st.expander("📅 過去の日付を選んで記録する"):
         st.caption("※ 先に『飲まなかった』『節約計算』『運動』などの行動を入力してから、日付を選んで『🪄 リバース発動』を押してください")
         reverse_date = st.date_input("🗓 入力したい過去の日付を選んでください")
-        if st.button("🪄 リバース発動！"):
+        reverse_summary = f"""
+{reverse_date} に以下の内容を記録します：  
+断酒：{st.session_state.choice or '未選択'}  
+節約額：{saved}円  
+運動：{"あり" if st.session_state.did_exercise else "なし"}  
+理不尽：{st.session_state.irihuda_level or "なし"}  
+"""
+
+        if confirm_save(reverse_summary, "reverse"):
             if str(reverse_date) in df_all["日付"].values:
                 st.warning("その日はすでに記録されています。")
             else:
@@ -289,7 +312,17 @@ else:
 # ======================
 # 【セーブ処理】
 # ======================
-if st.button("📅 今日の結果をセーブ"):
+st.header("📅 今日の記録")
+
+today_summary = f"""
+{today} に以下の内容を記録します：  
+断酒：{st.session_state.choice or '未選択'}  
+節約額：{saved}円  
+運動：{"あり" if st.session_state.did_exercise else "なし"}  
+理不尽：{st.session_state.irihuda_level or "なし"}  
+"""
+
+if confirm_save(today_summary, "normal"):
     df = pd.read_csv(csv_path)
     if today not in df["日付"].values:
         new_row = {
@@ -308,10 +341,10 @@ if st.button("📅 今日の結果をセーブ"):
         }
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         df.to_csv(csv_path, index=False)
-        st.success("セーブ完了！")
+        st.success("📅 今日の記録をセーブしました！")
     else:
-        st.warning("今日はすでにセーブされています")
-
+        st.warning("⚠️ 今日はすでに記録されています。")
+        
 # ======================
 # 【記録表示】
 # ======================
