@@ -8,85 +8,61 @@ today = str(date.today())
 # ======================
 # 【初期設定】
 # ======================
-if 'gold' not in st.session_state:
-    st.session_state.gold = 0
-if 'health' not in st.session_state:
-    st.session_state.health = 0
-if 'mental' not in st.session_state:
-    st.session_state.mental = 0
-if 'strength' not in st.session_state:
-    st.session_state.strength = 0
-if 'cool' not in st.session_state:
-    st.session_state.cool = 0
-if 'choice' not in st.session_state:
-    st.session_state.choice = ""
-if 'did_exercise' not in st.session_state:
-    st.session_state.did_exercise = False
-if 'irihuda_level' not in st.session_state:
-    st.session_state.irihuda_level = ""
-if 'wisdom' not in st.session_state:
-    st.session_state.wisdom = 0  # 旧さいだいMP（かしこさ）
-if 'mp' not in st.session_state:
-    st.session_state.mp = 7  # MPの現在値（初期値最大）
-if 'max_mp' not in st.session_state:
-    st.session_state.max_mp = 7  # MPの最大値
-if 'last_access' not in st.session_state:
-    st.session_state.last_access = today  # 最終アクセス日（MP回復に使う）
-if 'drink_action_done' not in st.session_state:
-    st.session_state.drink_action_done = False
+defaults = {
+    'gold': 0,
+    'health': 0,
+    'mental': 0,
+    'strength': 0,
+    'cool': 0,
+    'choice': "",
+    'did_exercise': False,
+    'irihuda_level': "",
+    'wisdom': 0,
+    'mp': 7,
+    'max_mp': 7,
+    'last_access': today,
+    'drink_action_done': False
+}
+for key, val in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = val
 
-# 毎日アクセス時にMP +1 回復（最大まで）
+# MPの自動回復
 if st.session_state.last_access != today:
     st.session_state.mp = min(st.session_state.mp + 1, st.session_state.max_mp)
     st.session_state.last_access = today
 
-# CSVと日付設定
+# CSV準備
 csv_path = "record.csv"
-today = str(date.today())
-
-# カラム定義
 columns = [
     "日付", "日常の選択", "節約額", "運動", "理不尽レベル",
     "ゴールド", "健康", "精神力", "精神", "筋力", "かっこよさ", "日別効果"
 ]
 
-# CSVがなければ作成
 if not os.path.exists(csv_path):
     pd.DataFrame(columns=columns).to_csv(csv_path, index=False)
 
-# CSV読み込み
 df_all = pd.read_csv(csv_path)
 
-# 欠けてる列を補筆
+# 不足列の補完
 for col in columns:
     if col not in df_all.columns:
         df_all[col] = 0 if col in ["ゴールド", "健康", "精神力", "精神", "筋力", "かっこよさ", "節約額"] else ""
 
-# ステータスの累積を個別に合計して表示用変数に格納
+# ステータス集計
 total_gold = df_all["ゴールド"].sum()
 total_health = df_all["健康"].sum()
 total_mental = df_all["精神力"].sum()
 total_strength = df_all["筋力"].sum()
 total_cool = df_all["かっこよさ"].sum()
-
-# 継続日数
 continuation_days = (df_all["日別効果"] != "").sum()
 
+# レベル計算
 def get_level(days):
-    if days == 0:
-        return 0
-    elif days < 100:
-        return int(days * 0.5)
-    else:
-        return min(99, int(50 + (days - 100) * 0.25))
+    return 0 if days == 0 else min(99, int(days * 0.5) if days < 100 else 50 + int((days - 100) * 0.25))
 
 def get_level_progress(days):
-    if days == 0:
-        return 0
-    elif days < 100:
-        return int((days / 100) * 50)
-    else:
-        return min(100, int(50 + ((days - 100) / 800) * 50))
+    return 0 if days == 0 else int((days / 100) * 50) if days < 100 else min(100, 50 + int((days - 100) / 800 * 50))
 
 def get_next_level_info(days):
     now = get_level(days)
@@ -95,6 +71,10 @@ def get_next_level_info(days):
             return d - days
     return "max"
 
+level = get_level(continuation_days)
+progress = get_level_progress(continuation_days)
+next_need = get_next_level_info(continuation_days)
+
 # ======================
 # 【ポップアップ式確認ダイアログ】
 # ======================
@@ -102,11 +82,12 @@ def confirm_save(summary_text, key_prefix):
     st.markdown("### 🎮 リバースをつかう" if key_prefix == "reverse" else "### 💾 今日のぼうけんを記録する")
     with st.container():
         st.markdown("#### ぼうけんの内容を確認してください")
-        st.info(summary_text)
+        st.markdown(f"<div style='background-color:#222;padding:10px;border-radius:8px;'>{summary_text}</div>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         confirm = col1.button("✅ はい", key=f"{key_prefix}_confirm_button")
         cancel = col2.button("❌ いいえ（しゅうせい）", key=f"{key_prefix}_cancel_button")
         return confirm and not cancel
+
 
 # ======================
 # 【CSSデザイン】
@@ -175,7 +156,7 @@ st.title("🎮 断酒クエスト")
 st.markdown("## 🧙‍♂️ ステータス画面")
 st.markdown(f"""
 <div style='font-size: 22px;'>
-🗡 レベル: {level}（続けて {continuation_days} 日）<br>
+🗡 レベル: {level}（続けて {continuation_days}日）<br>
 次のレベルまであと {next_need} 日
 </div>
 """, unsafe_allow_html=True)
