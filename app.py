@@ -22,6 +22,19 @@ if 'did_exercise' not in st.session_state:
     st.session_state.did_exercise = False
 if 'irihuda_level' not in st.session_state:
     st.session_state.irihuda_level = ""
+if 'wisdom' not in st.session_state:
+    st.session_state.wisdom = 0  # 旧さいだいMP（かしこさ）
+if 'mp' not in st.session_state:
+    st.session_state.mp = 7  # MPの現在値（初期値最大）
+if 'max_mp' not in st.session_state:
+    st.session_state.max_mp = 7  # MPの最大値
+if 'last_access' not in st.session_state:
+    st.session_state.last_access = today  # 最終アクセス日（MP回復に使う）
+
+# 毎日アクセス時にMP +1 回復（最大まで）
+if st.session_state.last_access != today:
+    st.session_state.mp = min(st.session_state.mp + 1, st.session_state.max_mp)
+    st.session_state.last_access = today
 
 # CSVと日付設定
 csv_path = "record.csv"
@@ -159,7 +172,8 @@ st.markdown(f"""
 <div class="stat-table">
   <div class="row"><span>💰 ゴールド</span><span>{total_gold} G</span></div>
   <div class="row"><span>❤️ さいだいHP</span><span>{total_health}</span></div>
-  <div class="row"><span>🧘‍♂️ さいだいMP</span><span>{total_mental}</span></div>
+  <div class="row"><span>🧠 かしこさ</span><span>{st.session_state.wisdom}</span></div>
+  <div class="row"><span>🌀 MP</span><span>{st.session_state.mp} / {st.session_state.max_mp}</span></div>
   <div class="row"><span>💪 こうげき力</span><span>{total_strength}</span></div>
   <div class="row"><span>😎 かっこよさ</span><span>{total_cool}</span></div>
 </div>
@@ -222,6 +236,40 @@ elif col3.button("🤬 強 (Lv3)"):
     st.session_state.mental += 3
     st.session_state.irihuda_level = "Lv3"
     st.success("不条理の絞め技を勝利でかわした！+1000G 精神+3")
+
+# ======================
+# 【UI：リバース魔法（過去の日に入力）】
+# ======================
+st.header("🪄 リバース魔法（過去の記録入力）")
+
+if st.session_state.mp < 6:
+    st.warning(f"MPが足りません…（現在のMP: {st.session_state.mp}）")
+else:
+    with st.expander("📅 過去の日付を選んで記録する"):
+        reverse_date = st.date_input("🗓 入力したい過去の日付を選んでください")
+        if st.button("🪄 リバース発動！"):
+            if str(reverse_date) in df_all["日付"].values:
+                st.warning("その日はすでに記録されています。")
+            else:
+                st.session_state.mp -= 6
+                df_reverse = pd.read_csv(csv_path)
+                new_row = {
+                    "日付": str(reverse_date),
+                    "日常の選択": st.session_state.choice,
+                    "節約額": saved,
+                    "運動": "○" if st.session_state.did_exercise else "",
+                    "理不尽レベル": st.session_state.irihuda_level,
+                    "ゴールド": st.session_state.gold,
+                    "健康": st.session_state.health,
+                    "精神力": st.session_state.mental,
+                    "精神": "",
+                    "筋力": st.session_state.strength,
+                    "かっこよさ": st.session_state.cool,
+                    "日別効果": "リバース記録"
+                }
+                df_reverse = pd.concat([df_reverse, pd.DataFrame([new_row])], ignore_index=True)
+                df_reverse.to_csv(csv_path, index=False)
+                st.success(f"🪄 リバース魔法成功！{reverse_date} に記録を追加しました（MP -6）")
 
 # ======================
 # 【セーブ処理】
