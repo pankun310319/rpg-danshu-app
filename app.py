@@ -95,16 +95,18 @@ def get_next_level_info(days):
             return d - days
     return "max"
 
+# ======================
+# 【ポップアップ式確認ダイアログ】
+# ======================
 def confirm_save(summary_text, key_prefix):
-    st.markdown("### 💾 記録内容を確認してください")
+    st.markdown("### 🎮 リバースをつかう" if key_prefix == "reverse" else "### 💾 今日のぼうけんを記録する")
     with st.container():
+        st.markdown("#### ぼうけんの内容を確認してください")
         st.info(summary_text)
-        return st.button("✅ この内容で保存する", key=f"{key_prefix}_confirm_button")
-
-
-level = get_level(continuation_days)
-progress = get_level_progress(continuation_days)
-next_need = get_next_level_info(continuation_days)
+        col1, col2 = st.columns(2)
+        confirm = col1.button("✅ はい", key=f"{key_prefix}_confirm_button")
+        cancel = col2.button("❌ いいえ（しゅうせい）", key=f"{key_prefix}_cancel_button")
+        return confirm and not cancel
 
 # ======================
 # 【CSSデザイン】
