@@ -83,23 +83,20 @@ progress = get_level_progress(continuation_days)
 next_need = get_next_level_info(continuation_days)
 
 # ======================
-# 【ドラクエ風ステータスデザイン】
-# ======================
-# ======================
-# 【CSS：ドラクエ風ステータス】
+# 【CSSデザイン（ドラクエ風）】
 # ======================
 st.markdown("""
 <style>
 .stat-table {
-    background-color: #0d1625;
-    border: 2px solid #c0c0c0;
-    padding: 15px 25px;
-    font-size: 20px;
+    border: 2px double #aaa;
+    background-color: #0a0f23; /* 深い紺 */
+    padding: 12px 16px;
+    font-size: 18px;
     font-family: 'M PLUS Rounded 1c', sans-serif;
-    width: fit-content;
     color: white;
-    border-radius: 4px;
-    box-shadow: 0 0 10px #000;
+    width: fit-content;
+    border-radius: 6px;
+    box-shadow: 0 0 4px #222;
 }
 .stat-table .row {
     display: flex;
@@ -107,19 +104,18 @@ st.markdown("""
     padding: 6px 0;
 }
 .stat-table .row span:first-child {
-    color: white;
     margin-right: 20px;
-    font-weight: bold;
+    color: white;
 }
 .stat-table .row span:last-child {
+    min-width: 50px;
     text-align: right;
-    min-width: 60px;
     display: inline-block;
-    color: #ffff99; /* ドラクエ風の黄色 */
-    font-family: monospace;
+    color: #fff57a;  /* ドラクエの黄色っぽい数値色 */
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 # ======================
 # 【UI：ステータス表示】
