@@ -287,10 +287,15 @@ st.header("🪄 リバース：-6（過去の記録入力）")
 if st.session_state.mp < 6:
     st.warning(f"MPが足りません…（現在のMP: {st.session_state.mp}）")
 else:
-    reverse_mode = st.checkbox("📅 リバース記録モード", value=False)
-    if reverse_mode:
-        reverse_date = st.date_input("🗓 入力したい過去の日付を選んでください")
-        reverse_summary = f"""
+    if "reverse_mode" not in st.session_state:
+    st.session_state.reverse_mode = False
+
+if st.button("📅 リバース記録モード", key="reverse_button"):
+    st.session_state.reverse_mode = not st.session_state.reverse_mode
+
+if st.session_state.reverse_mode:
+    reverse_date = st.date_input("🗓 入力したい過去の日付を選んでください")
+    reverse_summary = f"""
 🪄 リバース対象日: {reverse_date}  
 断酒：{st.session_state.choice or '未選択'}  
 節約額：{saved}円  
