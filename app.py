@@ -105,8 +105,6 @@ def render_popup():
         return "cancel"
     return None
 
-＃＃＃＃＃＃＃
-
 # ======================
 # 【CSSデザイン】
 # ======================
