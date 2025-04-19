@@ -94,6 +94,7 @@ def get_next_level_info(days):
     return "max"
 
 level = get_level(continuation_days)
+progress = get_level_progress(continuation_days)
 next_need = get_next_level_info(continuation_days)
 
 # ✅ ポップアップ確認モード（モーダル風）
