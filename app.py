@@ -70,9 +70,6 @@ total_strength = df_all["筋力"].sum()
 total_cool = df_all["かっこよさ"].sum()
 continuation_days = (df_all["日別効果"] != "").sum()
 
-level = get_level(continuation_days)
-next_need = get_next_level_info(continuation_days)
-
 def get_level(days):
     if days == 0:
         return 0
@@ -95,6 +92,9 @@ def get_next_level_info(days):
         if get_level(d) > now:
             return d - days
     return "max"
+
+level = get_level(continuation_days)
+next_need = get_next_level_info(continuation_days)
 
 # ✅ ポップアップ確認モード（モーダル風）
 def render_popup():
