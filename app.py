@@ -32,6 +32,8 @@ if 'max_mp' not in st.session_state:
     st.session_state.max_mp = 7  # MPの最大値
 if 'last_access' not in st.session_state:
     st.session_state.last_access = today  # 最終アクセス日（MP回復に使う）
+if 'drink_action_done' not in st.session_state:
+    st.session_state.drink_action_done = False
 
 # 毎日アクセス時にMP +1 回復（最大まで）
 if st.session_state.last_access != today:
@@ -184,17 +186,27 @@ st.markdown(f"""
 # ======================
 # 【UI：断酒と誘惑モンスター】
 # ======================
-st.header("🍺 今日の断酒状況")
 col1, col2 = st.columns(2)
 if col1.button("😇 飲まなかった"):
-    st.session_state.choice = "飲まなかった"
-    st.success("🍃 継続だけでも立派！")
+    if not st.session_state.drink_action_done:
+        st.session_state.choice = "飲まなかった"
+        st.session_state.health += 1
+        st.session_state.mental += 1
+        st.session_state.drink_action_done = True
+        st.success("complete! 『飲まなかった』が記録！さいだいHP+1 かしこさ+1")
+    else:
+        st.info("すでに選択されています")
+
 elif col2.button("⚔ 誘惑モンスター撃破！"):
-    st.session_state.choice = "誘惑モンスター撃破"
-    st.session_state.gold += 1500
-    st.session_state.health += 1
-    st.session_state.mental += 1
-    st.success("誘惑に勝った！ +1500G 健康+1 精神+1")
+    if not st.session_state.drink_action_done:
+        st.session_state.choice = "誘惑モンスター撃破"
+        st.session_state.gold += 1500
+        st.session_state.health += 1
+        st.session_state.mental += 1
+        st.session_state.drink_action_done = True
+        st.success("complete! 誘惑モンスター撃破！+1500G さいだいHP+1 かしこさ+1")
+    else:
+        st.info("すでに選択されています")
 
 # ======================
 # 【UI：節約・運動】
