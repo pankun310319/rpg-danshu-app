@@ -87,16 +87,53 @@ next_need = get_next_level_info(continuation_days)
 # ======================
 st.markdown("""
 <style>
+/* 全体背景と文字色 */
+html, body, .stApp {
+    background-color: #000000 !important;
+    color: white !important;
+}
+
+/* 入力フォームなどの背景色を暗めに統一 */
+input, textarea, .stNumberInput input {
+    background-color: #111 !important;
+    color: white !important;
+    border: 1px solid #888 !important;
+    border-radius: 6px;
+    padding: 5px;
+}
+.stNumberInput button {
+    background-color: #222 !important;
+    color: white !important;
+    border: 1px solid #888 !important;
+}
+
+/* ボタンの色 */
+.stButton > button {
+    background-color: #222;
+    color: white !important;
+    font-weight: bold;
+    border: 1px solid #888;
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin: 4px 0;
+}
+
+/* ラベルやセレクタの文字色 */
+label, .stTextInput > label, .stNumberInput > label, .stSelectbox label {
+    color: white !important;
+}
+
+/* ステータステーブルのデザイン */
 .stat-table {
     border: 2px double #aaa;
-    background-color: #0a0f23; /* 深い紺 */
+    background-color: #0a0f23; /* ドラクエの濃紺 */
     padding: 12px 16px;
     font-size: 18px;
     font-family: 'M PLUS Rounded 1c', sans-serif;
     color: white;
     width: fit-content;
     border-radius: 6px;
-    box-shadow: 0 0 4px #222;
+    box-shadow: 0 0 6px #222;
 }
 .stat-table .row {
     display: flex;
@@ -111,7 +148,12 @@ st.markdown("""
     min-width: 50px;
     text-align: right;
     display: inline-block;
-    color: #fff57a;  /* ドラクエの黄色っぽい数値色 */
+    color: #fff57a; /* 黄色 */
+}
+
+/* st.infoの文字色も白く強制 */
+.css-1t3gfev {
+    color: white !important;
 }
 </style>
 """, unsafe_allow_html=True)
