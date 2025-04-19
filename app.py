@@ -302,7 +302,7 @@ if st.session_state.mp < 6:
     st.warning(f"MPが足りません…（現在のMP: {st.session_state.mp}）")
 else:
     if "reverse_mode" not in st.session_state:
-    st.session_state.reverse_mode = False
+    　　st.session_state.reverse_mode = False
 
 if st.button("📅 リバース記録モード", key="reverse_button"):
     st.session_state.reverse_mode = not st.session_state.reverse_mode
