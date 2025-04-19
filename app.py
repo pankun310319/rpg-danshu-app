@@ -172,12 +172,12 @@ st.progress(progress)
 
 st.markdown(f"""
 <div class="stat-table">
-  <div class="row"><span>💰 ゴールド</span><span>{total_gold} G</span></div>
-  <div class="row"><span>❤️ さいだいHP</span><span>{total_health}</span></div>
-  <div class="row"><span>🧠 かしこさ</span><span>{st.session_state.wisdom}</span></div>
-  <div class="row"><span>🌀 MP</span><span>{st.session_state.mp} / {st.session_state.max_mp}</span></div>
-  <div class="row"><span>💪 こうげき力</span><span>{total_strength}</span></div>
-  <div class="row"><span>😎 かっこよさ</span><span>{total_cool}</span></div>
+   <div class="row"><span>💰 ゴールド</span><span>{int(total_gold)} G</span></div>
+  <div class="row"><span>❤️ さいだいHP</span><span>{int(total_health)}</span></div>
+  <div class="row"><span>🧠 かしこさ</span><span>{int(st.session_state.wisdom)}</span></div>
+  <div class="row"><span>🌀 MP</span><span>{int(st.session_state.mp)} / {int(st.session_state.max_mp)}</span></div>
+  <div class="row"><span>💪 こうげき力</span><span>{int(total_strength)}</span></div>
+  <div class="row"><span>😎 かっこよさ</span><span>{int(total_cool)}</span></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -242,7 +242,7 @@ elif col3.button("🤬 強 (Lv3)"):
 # ======================
 # 【UI：リバース魔法（過去の日に入力）】
 # ======================
-st.header("🪄 リバース魔法（過去の記録入力）")
+st.header("🪄 リバース：-6（過去の記録入力）")
 
 if st.session_state.mp < 6:
     st.warning(f"MPが足りません…（現在のMP: {st.session_state.mp}）")
