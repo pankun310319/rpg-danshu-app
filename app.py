@@ -109,6 +109,16 @@ def render_popup():
         return "cancel"
     return None
 
+# ✅ ←ここに追記！！
+def confirm_save(summary_text, key_prefix):
+    st.markdown("### 📜 記録の確認")
+    st.markdown("以下の内容で保存します。よろしいですか？")
+    st.info(summary_text)
+    col1, col2 = st.columns(2)
+    confirm = col1.button("✅ はい", key=f"{key_prefix}_confirm_button")
+    cancel = col2.button("❌ いいえ（しゅうせい）", key=f"{key_prefix}_cancel_button")
+    return confirm and not cancel
+
 # ======================
 # 【CSSデザイン】
 # ======================
