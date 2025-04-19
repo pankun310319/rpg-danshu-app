@@ -96,8 +96,9 @@ def get_next_level_info(days):
     return "max"
 
 def confirm_save(summary_text, key_prefix):
-    with st.expander("💾 記録内容を確認してください"):
-        st.markdown(summary_text)
+    st.markdown("### 💾 記録内容を確認してください")
+    with st.container():
+        st.info(summary_text)
         return st.button("✅ この内容で保存する", key=f"{key_prefix}_confirm_button")
 
 
