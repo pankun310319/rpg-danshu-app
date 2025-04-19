@@ -106,15 +106,6 @@ progress = get_level_progress(continuation_days)
 next_need = get_next_level_info(continuation_days)
 
 # ======================
-# 【確認ダイアログ関数】
-# ======================
-def confirm_save(summary_text, button_key):
-    with st.expander(f"確認: {button_key}", expanded=True):
-        st.markdown("### 次の内容でセーブします:")
-        st.info(summary_text)
-        return st.button("上記の内容で確定する", key=f"confirm_{button_key}")
-
-# ======================
 # 【CSSデザイン】
 # ======================
 st.markdown("""
