@@ -3,6 +3,8 @@ import pandas as pd
 import os
 from datetime import date
 
+today = str(date.today())
+
 # ======================
 # 【初期設定】
 # ======================
