@@ -5,6 +5,93 @@ from datetime import date
 
 today = str(date.today())
 
+# ======== 🎨 ドラクエ風CSSデザイン ==========
+
+st.markdown("""
+<style>
+body, .stApp {
+    background-color: #000;
+    color: white;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+}
+input, textarea {
+    background-color: #112233 !important;
+    color: #FFFFAA !important;
+    border: 2px solid #888 !important;
+    border-radius: 6px;
+    padding: 5px;
+}
+.stNumberInput input {
+    background-color: #112233 !important;
+    color: #FFFFAA !important;
+}
+.stNumberInput button {
+    background-color: #223344 !important;
+    color: white !important;
+    border: 1px solid #aaa !important;
+}
+.stButton > button {
+    background-color: #223344;
+    color: #FFFFAA !important;
+    font-weight: bold;
+    border: 2px solid #AAA;
+    border-radius: 8px;
+    padding: 6px 14px;
+    margin: 6px 0;
+    font-size: 16px;
+}
+.stButton > button:hover {
+    background-color: #334455;
+}
+label, .stTextInput > label, .stNumberInput > label {
+    color: white !important;
+}
+.stat-table {
+    border: 4px double #DDD;
+    background-color: #111C2E;
+    padding: 12px;
+    font-size: 18px;
+    width: fit-content;
+    color: #FFFFAA;
+}
+.stat-table .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+}
+.stat-table .row span:first-child {
+    margin-right: 20px;
+    color: #CCCCCC;
+}
+.stat-table .row span:last-child {
+    text-align: right;
+    min-width: 60px;
+    display: inline-block;
+    color: #FFFFAA;
+}
+.confirm-popup {
+    background-color: #223344;
+    border: 2px solid #AAA;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 10px;
+    text-align: center;
+}
+div[data-testid="stCheckbox"] > div {
+    background-color: #112233;
+    border: 1px solid #aaa;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    font-weight: bold;
+    color: #FFFFAA;
+}
+.css-1t3gfev {
+    color: white !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ======================
 # 【初期設定】
 # ======================
